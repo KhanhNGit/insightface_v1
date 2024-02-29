@@ -3,7 +3,7 @@ import cv2
 import torch
 import numpy as np
 
-from .face_align import norm_crop
+# from .face_align import norm_crop
 
 class ArcFaceONNX:
     def __init__(self, model_file=None):
@@ -28,14 +28,16 @@ class ArcFaceONNX:
         self.input_mean = 0.0
         self.input_std = 1.0
         #print('input mean and std:', self.input_mean, self.input_std)
-        self.model = torch.load(self.model_file)
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.model = torch.load(self.model_file).to(self.device)
         self.model.eval()
         self.input_size = (112, 112)
 
-    def get(self, img, face):
-        aimg = norm_crop(img, landmark=face.kps, image_size=self.input_size[0])
-        face.embedding = np.array(self.get_feat(aimg)).flatten()
-        return face.embedding
+    def get(self, face):
+        # aimg = norm_crop(img, landmark=face.kps, image_size=self.input_size[0])
+        # face.embedding = np.array(self.get_feat(aimg)).flatten()
+        # return face.embedding
+        return np.array(self.get_feat(face))
 
     # def compute_sim(self, feat1, feat2):
     #     from numpy.linalg import norm
@@ -52,9 +54,10 @@ class ArcFaceONNX:
         blob = cv2.dnn.blobFromImages(imgs, 1.0 / self.input_std, input_size,
                                       (self.input_mean, self.input_mean, self.input_mean), swapRB=True)
         blob = torch.from_numpy(blob)
+        blob = blob.to(self.device)
         with torch.no_grad():
             net_out = self.model(blob)
-            net_out = [i.detach().numpy() for i in net_out]
+            net_out = [i.detach().cpu().numpy() for i in net_out]
         return net_out
 
     # def forward(self, batch_data):

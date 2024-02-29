@@ -4,6 +4,7 @@ import os
 from .retinaface import RetinaFace
 from .common import Face
 from .arcface import ArcFaceONNX
+from .face_align import norm_crop
 
 __all__ = ['FaceAnalysis']
 
@@ -39,20 +40,25 @@ class FaceAnalysis:
                                              metric='default')
         if bboxes.shape[0] == 0:
             return []
-        ret = []
+        # ret = []
+        # for i in range(bboxes.shape[0]):
+        #     bbox = bboxes[i, 0:4]
+        #     det_score = bboxes[i, 4]
+        #     kps = None
+        #     if kpss is not None:
+        #         kps = kpss[i]
+        #     face = Face(bbox=bbox, kps=kps, det_score=det_score)
+        #     for taskname, model in self.models.items():
+        #         if taskname=='detection':
+        #             continue
+        #         model.get(img, face)
+        #     ret.append(face)
+        # return ret
+
+        faces = []
         for i in range(bboxes.shape[0]):
-            bbox = bboxes[i, 0:4]
-            det_score = bboxes[i, 4]
-            kps = None
-            if kpss is not None:
-                kps = kpss[i]
-            face = Face(bbox=bbox, kps=kps, det_score=det_score)
-            for taskname, model in self.models.items():
-                if taskname=='detection':
-                    continue
-                model.get(img, face)
-            ret.append(face)
-        return ret
+            faces.append(norm_crop(img, landmark=kpss[i]))
+        return self.rec_model.get(faces)
 
     def draw_on(self, img, faces):
         import cv2
