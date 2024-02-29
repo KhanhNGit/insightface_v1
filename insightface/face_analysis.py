@@ -55,9 +55,7 @@ class FaceAnalysis:
         #     ret.append(face)
         # return ret
 
-        faces = []
-        for i in range(bboxes.shape[0]):
-            faces.append(norm_crop(img, landmark=kpss[i]))
+        faces = [norm_crop(img, landmark=x) for x in kpss]
         return self.rec_model.get(faces)
 
     def draw_on(self, img, faces):
