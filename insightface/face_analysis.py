@@ -1,6 +1,8 @@
 from __future__ import division
 
 import os
+import os.path as osp
+from pathlib import Path
 from .retinaface import RetinaFace
 from .common import Face
 from .arcface import ArcFaceONNX
@@ -9,7 +11,7 @@ from .face_align import norm_crop
 __all__ = ['FaceAnalysis']
 
 class FaceAnalysis:
-    def __init__(self, root='E:/Intern/FaceDetRec/buffalo_sc'):
+    def __init__(self, root=osp.join(Path(__file__).parent.parent.absolute(), 'buffalo_sc')):
         self.models = {}
         model_name = os.listdir(root)
         for mod in model_name:
@@ -24,7 +26,7 @@ class FaceAnalysis:
         self.rec_model = self.models['recognition']
 
 
-    def prepare(self, ctx_id=-1, det_thresh=0.5, det_size=(640, 640)):
+    def prepare(self, ctx_id=0, det_thresh=0.5, det_size=(640, 640)):
         self.det_thresh = det_thresh
         assert det_size is not None
         # print('set det-size:', det_size)
